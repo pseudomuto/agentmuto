@@ -1,0 +1,16 @@
+# Design docs and plans stay local
+.superpowers/
+docs/
+
+# mise local state
+.mise.local.toml
+mise.local.toml
+
+# Eval output
+evals/results/
+
+# macOS
+.DS_Store
+
+# Local permission grants
+.claude/settings.local.json

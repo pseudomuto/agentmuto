@@ -1,0 +1,31 @@
+{
+  "name": "agentmuto",
+  "description": "Personal coding agent skills for Claude Code",
+  "owner": {
+    "name": "David Muto",
+    "email": "4748863+pseudomuto@users.noreply.github.com"
+  },
+  "plugins": [
+    {
+      "name": "muto",
+      "description": "Agent Muto. Personal coding agent skills, deep cover in your terminal.",
+      "version": "0.0.0",
+      "source": "./",
+      "author": {
+        "name": "David Muto",
+        "email": "4748863+pseudomuto@users.noreply.github.com"
+      },
+      "homepage": "https://github.com/pseudomuto/agentmuto",
+      "license": "MIT",
+      "category": "productivity",
+      "keywords": [
+        "claude-code",
+        "claude-code-plugin",
+        "plugin",
+        "skills",
+        "ai-agent",
+        "agentic"
+      ]
+    }
+  ]
+}
