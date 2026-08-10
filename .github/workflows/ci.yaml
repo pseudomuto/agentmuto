@@ -12,10 +12,6 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: release-main
-  cancel-in-progress: false
-
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -96,6 +92,14 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    # Scoped to this job, not the workflow. A workflow-level group would be
+    # shared by push, pull_request and dispatch, and GitHub cancels a
+    # previously pending run when a new one queues in the same group, which
+    # would cancel PR checks and skip commit linting for the pushes whose
+    # runs got dropped. Only concurrent releases need serializing.
+    concurrency:
+      group: release-main
+      cancel-in-progress: false
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -193,18 +197,19 @@ jobs:
           # tracking origin/main and they fetch no tags, so a tag on a commit
           # the remote does not have publishes nothing.
           git push origin main
-          # `claude` ships no checksums, so `mise lock` can only record a url
-          # for its platform blocks. On a cold runner `mise install` computes
-          # a blake3 itself and writes it back, dirtying the tracked lockfile
-          # through no fault of this release. Verified in a linux/amd64
-          # container on the CI platform. Discard that one known-benign churn
-          # so the guard below still means something.
+          # On a cold runner `mise install` writes to the tracked lockfile
+          # through no fault of this release, on two surfaces. `committed` and
+          # `lefthook` carry no platform blocks here, so their urls and
+          # checksums get filled in on first install. `claude` ships no
+          # checksums at all, so mise computes a blake3 and backfills it.
+          # Both verified in a linux/amd64 container on the CI platform.
+          # Discard that known-benign churn so the guard below still means
+          # something.
           git restore --worktree -- mise.lock
-          # claude plugin tag refuses to tag a dirty tree, and a dirty tree
-          # here is not hypothetical: `mise install` rewrites mise.lock when a
-          # tool's entry lacks platform data for the runner. Fail with a
-          # message that names the real cause instead of letting the tag step
-          # emit a confusing lockfile error after main has already been pushed.
+          # Generic safety net. Lockfile churn is already discarded above, so
+          # anything still dirty here is unexpected. Fail with a message that
+          # names the real paths rather than letting `claude plugin tag` emit
+          # its own error after main has already been pushed.
           if [ -n "$(git status --porcelain)" ]; then
             printf 'error: working tree dirty before tagging, refusing to tag\n' >&2
             git status --porcelain >&2
