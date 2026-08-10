@@ -193,6 +193,13 @@ jobs:
           # tracking origin/main and they fetch no tags, so a tag on a commit
           # the remote does not have publishes nothing.
           git push origin main
+          # `claude` ships no checksums, so `mise lock` can only record a url
+          # for its platform blocks. On a cold runner `mise install` computes
+          # a blake3 itself and writes it back, dirtying the tracked lockfile
+          # through no fault of this release. Verified in a linux/amd64
+          # container on the CI platform. Discard that one known-benign churn
+          # so the guard below still means something.
+          git restore --worktree -- mise.lock
           # claude plugin tag refuses to tag a dirty tree, and a dirty tree
           # here is not hypothetical: `mise install` rewrites mise.lock when a
           # tool's entry lacks platform data for the runner. Fail with a
