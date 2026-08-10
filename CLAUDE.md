@@ -1,0 +1,22 @@
+# agentmuto
+
+## Commits
+
+Conventional Commits, enforced by a `commit-msg` hook and re-checked in CI. This **overrides** the global `[pkg]: Title`
+preference, which applies to Go projects rather than here.
+
+Types: `feat`, `fix`, `chore`, `docs`, `style`, `refactor`, `perf`, `test`, `ci`.
+Scopes (optional): `skills`, `plugin`, `scripts`, `ci`, `mise`, `readme`, `release`.
+
+Releases are automatic on every push to `main`, with the version inferred from the log, so the type is a release
+decision rather than a label:
+
+- Markdown under `skills/` is the product. Changing it is `feat` or `fix`, never `docs`.
+- `docs` is for files consumers never install, such as `README.md`.
+- `chore` and `docs` cut no release.
+
+`release` is a scope reserved for the CI release commit. Do not use it by hand.
+
+## Conventions
+
+YAML files use `.yaml`, not `.yml`.
