@@ -1,0 +1,45 @@
+# The commit message contract for this repo. Enforced locally by the lefthook
+# commit-msg hook and again in CI over the pushed range.
+#
+# Versions are inferred from these messages by `svu`, so a malformed message is
+# not a style problem, it is a release that does not happen or happens wrong.
+style = "conventional"
+
+# `ci` is absent from committed's default type list, so the list is replaced
+# rather than extended. Verified via `committed --dump-config -`.
+allowed_types = [
+  "feat",
+  "fix",
+  "chore",
+  "docs",
+  "style",
+  "refactor",
+  "perf",
+  "test",
+  "ci",
+]
+
+# Scope is optional, but a scope that is present must be one of these. This
+# catches typos like `feat(skil):` that would otherwise read as intentional.
+#
+# `release` exists for the CI release commit alone.
+allowed_scopes = [
+  "skills",
+  "plugin",
+  "scripts",
+  "ci",
+  "mise",
+  "readme",
+  "release",
+]
+
+# Conventional commits put a lowercase description after the type, so the
+# default of true is wrong here.
+subject_capitalized = false
+
+# The default of 50 is shorter than this repo's subjects run in practice.
+subject_length = 72
+
+imperative_subject = true
+no_wip = true
+no_fixup = true

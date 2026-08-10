@@ -22,6 +22,10 @@ url = "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d
 [tools.claude."platforms.macos-x64"]
 url = "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases/2.1.223/darwin-x64/claude"
 
+[[tools.committed]]
+version = "1.1.11"
+backend = "aqua:crate-ci/committed"
+
 [[tools.jq]]
 version = "1.8.1"
 backend = "aqua:jqlang/jq"
