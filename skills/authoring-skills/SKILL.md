@@ -123,15 +123,17 @@ manifests, commits, pushes, and tags `muto--vX.Y.Z`.
 
 The version comes from the commit messages, so the message is the release decision:
 
-| Commit                             | Effect            |
-| ---------------------------------- | ----------------- |
-| `fix(skills): ...`                 | patch             |
-| `feat(skills): ...`                | minor             |
-| `feat(skills)!: ...`               | major             |
-| `docs(readme): ...`, `chore: ...`  | no release        |
+| Commit                                                     | Effect     |
+| ---------------------------------------------------------- | ---------- |
+| `fix(skills): ...`                                         | patch      |
+| `feat(skills): ...`                                        | minor      |
+| `feat(skills)!: ...`                                       | major      |
+| `chore`, `docs`, `ci`, `style`, `refactor`, `perf`, `test` | no release |
 
-That last row is the one to watch. Markdown under `skills/` is the product, not documentation, so a rewrite of a
-`SKILL.md` body is `feat` or `fix`. Reserve `docs` for files consumers never install, like `README.md`.
+That last row is the complete set of types that publish nothing, and it is the one to watch. Only `feat` and `fix` cut a
+release, so `refactor(skills): ...` ships to nobody however much it changes. Markdown under `skills/` is the product,
+not documentation, so a rewrite of a `SKILL.md` body is `feat` or `fix`. Reserve `docs` for files consumers never
+install, like `README.md`.
 
 Pushing `main` is the step that publishes. Marketplace caches are git clones tracking `origin/main` and they fetch no
 tags, so consumers resolve the version from the branch and the tag is only a record. There is no auto-update, so
