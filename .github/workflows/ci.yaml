@@ -93,6 +93,16 @@ jobs:
       - name: Resolve version
         id: version
         run: |
+          # Actions runs `bash -e {0}`, which has no pipefail. Without this
+          # line a failure inside bare()'s pipeline is invisible: jq on empty
+          # stdin prints nothing and exits 0, so current and next both come
+          # back empty, compare equal, and the job reports "nothing to
+          # release" and goes green having released nothing. Verified:
+          # `bash -e -c 'v="$(false | jq -r ...)"'` yields an empty v and
+          # exit 0. The deleted release.sh had `set -Eeuo pipefail`; dropping
+          # it here was a regression.
+          set -o pipefail
+
           # svu prints the version with the tag prefix attached, and
           # --tag.output '' does not strip it. Rebuilding from the JSON
           # components is what yields a bare version for the manifests.
@@ -102,6 +112,19 @@ jobs:
           }
           current="$(bare current)"
           next="$(bare next)"
+
+          # Belt and braces over pipefail: reject anything that is not bare
+          # digits and dots. This also catches a regression in prefix
+          # stripping, since `muto--v0.1.0` would fail the same test.
+          for v in "$current" "$next"; do
+            case "$v" in
+              '' | *[!0-9.]*)
+                printf 'error: refusing to release, bad version %s\n' "$v" >&2
+                exit 1
+                ;;
+            esac
+          done
+
           printf 'current=%s next=%s\n' "$current" "$next"
           if [ "$next" = "$current" ]; then
             printf 'no releasable commits, skipping\n'
@@ -138,9 +161,25 @@ jobs:
           git config user.email \
             '41898282+github-actions[bot]@users.noreply.github.com'
           git add .claude-plugin/plugin.json .claude-plugin/marketplace.json
-          git commit -m "chore(release): publish v$VERSION"
+          # The commit is conditional because the bump can legitimately be a
+          # no-op: re-running after a partial publish where the push landed
+          # but the tag did not, or a contributor hand-bumping the manifest in
+          # a feat: PR. In those cases the manifests already carry the target
+          # version, nothing stages, and an unconditional `git commit` exits 1
+          # and kills the step before the tag command below, which is exactly
+          # the command a manual re-run exists to reach. Verified against the
+          # real manifest: unguarded exits 1, guarded continues.
+          if git diff --cached --quiet; then
+            printf 'manifests already at v%s, nothing to commit\n' "$VERSION"
+          else
+            git commit -m "chore(release): publish v$VERSION"
+          fi
           # Push the branch before tagging. Marketplace caches are clones
           # tracking origin/main and they fetch no tags, so a tag on a commit
           # the remote does not have publishes nothing.
           git push origin main
-          mise exec -- claude plugin tag --push -m "Release %s"
+          if git rev-parse -q --verify "refs/tags/muto--v$VERSION" >/dev/null; then
+            printf 'tag muto--v%s already exists, nothing to tag\n' "$VERSION"
+          else
+            mise exec -- claude plugin tag --push -m "Release %s"
+          fi
