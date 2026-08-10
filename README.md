@@ -41,14 +41,16 @@ for adding or releasing a skill.
 
 Requires [mise](https://mise.jdx.dev). All tools are pinned in `mise.toml`.
 
+Run `mise trust` once in a fresh clone, before anything below. Until the config is trusted mise refuses to run at all,
+so `mise install` exits with `Config files ... are not trusted` and installs nothing, hooks included.
+
 ```bash
 mise install          # install pinned tools, and wire up git hooks
 mise run validate     # manifests + skill spec conformance (offline)
 ```
 
 Commits follow [Conventional Commits](https://www.conventionalcommits.org). A `commit-msg` hook rejects anything else,
-and releases are cut automatically from the log, so the commit message decides the version. Run `mise trust` once in a
-fresh clone, otherwise mise will not run the hook installer.
+and releases are cut automatically from the log, so the commit message decides the version.
 
 Note: `mise.toml` pins the `claude` CLI, so inside this repository mise's copy shadows the one on your PATH. That is
 deliberate, it makes local runs identical to CI.
