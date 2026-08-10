@@ -12,6 +12,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -44,9 +48,12 @@ jobs:
         run: |
           if [ "$EVENT" = "pull_request" ]; then
             range="$BASE..HEAD"
-          elif [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
-            # First push to a new repository, or a newly created branch. There
-            # is no prior ref to diff against, so lint everything reachable.
+          elif [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            # First push to a new repository, a newly created branch, or a
+            # workflow_dispatch run where `before` is unset. There is no prior
+            # ref to diff against, so lint everything reachable. An unset
+            # BEFORE would otherwise collapse the range to `..HEAD`, which
+            # resolves to the empty set and passes without linting anything.
             range="HEAD"
           else
             range="$BEFORE..HEAD"
@@ -67,8 +74,16 @@ jobs:
           # regardless of the contributor's actual commits. Verified against
           # this repo's real committed.toml: a merge commit in range exits 1,
           # and --no-merges exits 0.
+          # A bad range makes git print "fatal: Invalid revision range" and
+          # exit non-zero, but the loop would still finish with status 0 and
+          # report a pass it never performed. Resolve the list up front so a
+          # broken range fails the job instead.
+          if ! shas="$(git rev-list --no-merges "$range")"; then
+            printf 'error: could not resolve commit range %s\n' "$range" >&2
+            exit 1
+          fi
           status=0
-          for sha in $(git rev-list --no-merges "$range"); do
+          for sha in $shas; do
             mise exec -- committed "$sha" || status=1
           done
           exit "$status"
@@ -178,6 +193,16 @@ jobs:
           # tracking origin/main and they fetch no tags, so a tag on a commit
           # the remote does not have publishes nothing.
           git push origin main
+          # claude plugin tag refuses to tag a dirty tree, and a dirty tree
+          # here is not hypothetical: `mise install` rewrites mise.lock when a
+          # tool's entry lacks platform data for the runner. Fail with a
+          # message that names the real cause instead of letting the tag step
+          # emit a confusing lockfile error after main has already been pushed.
+          if [ -n "$(git status --porcelain)" ]; then
+            printf 'error: working tree dirty before tagging, refusing to tag\n' >&2
+            git status --porcelain >&2
+            exit 1
+          fi
           if git rev-parse -q --verify "refs/tags/muto--v$VERSION" >/dev/null; then
             printf 'tag muto--v%s already exists, nothing to tag\n' "$VERSION"
           else
