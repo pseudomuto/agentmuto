@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install mise and tools
+        uses: jdx/mise-action@v4
+
+      - name: Validate
+        run: mise run validate
+
+  commits:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install mise and tools
+        uses: jdx/mise-action@v4
+
+      - name: Lint commit messages
+        env:
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [ "$EVENT" = "pull_request" ]; then
+            range="$BASE..HEAD"
+          elif [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            # First push to a new repository, or a newly created branch. There
+            # is no prior ref to diff against, so lint everything reachable.
+            range="HEAD"
+          else
+            range="$BEFORE..HEAD"
+          fi
+          printf 'linting range: %s\n' "$range"
+          # committed lints exactly the revision it is handed. Given a single
+          # ref like HEAD it checks that one commit and silently ignores every
+          # ancestor, so a bad commit behind the tip would pass. Enumerate with
+          # rev-list and lint one commit at a time. Verified: a repo with a
+          # bogus root and a valid tip exits 0 for `committed HEAD` and 1 for
+          # this loop.
+          status=0
+          for sha in $(git rev-list "$range"); do
+            mise exec -- committed "$sha" || status=1
+          done
+          exit "$status"
