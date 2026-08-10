@@ -20,4 +20,8 @@ decision rather than a label:
 
 ## Conventions
 
-YAML files use `.yaml`, not `.yml`.
+YAML files use `.yaml`, not `.yml`. The sole exception is `.github/dependabot.yml`, because GitHub reads only that
+exact filename.
+
+GitHub Actions are pinned by commit SHA with the version in a trailing comment, never by a mutable tag like `@v7`.
+Dependabot updates both parts together.

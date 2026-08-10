@@ -1,0 +1,27 @@
+# Actions are pinned by commit SHA in the workflow, which means they never
+# update on their own and go quiet when a security patch ships. Dependabot is
+# what turns that silence back into a signal: it rewrites both the SHA and the
+# trailing version comment, so the pins stay honest.
+#
+# This file is `.yml`, the one exception to the repo's `.yaml` rule, because
+# GitHub only reads `.github/dependabot.yml`.
+version: 2
+
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+
+    # Dependabot's default subject is "Bump actions/checkout from X to Y",
+    # which has no conventional type and would be rejected by the commits job,
+    # leaving every Dependabot PR red. This prefix yields
+    # "ci: bump actions/checkout from X to Y", which passes the contract.
+    commit-message:
+      prefix: "ci"
+
+    # One PR covering every action, rather than one PR per action.
+    groups:
+      actions:
+        patterns:
+          - "*"
