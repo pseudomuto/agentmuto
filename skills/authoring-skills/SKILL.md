@@ -118,18 +118,24 @@ gets no CI run until it is opened as a pull request.
 
 ## Releasing
 
-Separate and manual:
+Automatic. Every push to `main` runs CI, and if the commit log since the last tag implies a new version, CI bumps both
+manifests, commits, pushes, and tags `muto--vX.Y.Z`.
 
-```bash
-mise run release patch    # or minor, or major
-```
+The version comes from the commit messages, so the message is the release decision:
 
-That bumps both manifests, revalidates, commits, pushes `main`, and pushes a `muto--vX.Y.Z` tag. Consumers pick it up
-with `/plugin update muto@agentmuto`.
+| Commit                             | Effect            |
+| ---------------------------------- | ----------------- |
+| `fix(skills): ...`                 | patch             |
+| `feat(skills): ...`                | minor             |
+| `feat(skills)!: ...`               | major             |
+| `docs(readme): ...`, `chore: ...`  | no release        |
 
-Pushing `main` is the step that matters. Marketplace caches are git clones tracking `origin/main` and they fetch no
-tags, so consumers resolve the version from the branch. A release that is committed locally but never pushed reaches
-nobody, even though the tag exists. There is no auto-update, so updating is always an explicit command.
+That last row is the one to watch. Markdown under `skills/` is the product, not documentation, so a rewrite of a
+`SKILL.md` body is `feat` or `fix`. Reserve `docs` for files consumers never install, like `README.md`.
+
+Pushing `main` is the step that publishes. Marketplace caches are git clones tracking `origin/main` and they fetch no
+tags, so consumers resolve the version from the branch and the tag is only a record. There is no auto-update, so
+consumers still update with an explicit `/plugin update muto@agentmuto`.
 
 ## Adding a skill, end to end
 
@@ -137,7 +143,5 @@ nobody, even though the tag exists. There is no auto-update, so updating is alwa
 2. Write `skills/<name>/SKILL.md` with `name: <name>` matching the directory.
 3. `mise run validate`
 4. Add a row to the skills table in `README.md`.
-5. Commit with a `skills:` scope prefix.
-6. Open a pull request; CI runs validation.
-7. After merge, `mise run release <patch|minor|major>` to make it installable. The bump type is a judgment call: a new
-   skill is typically `minor`, a fix to an existing one `patch`.
+5. Commit with a conventional message: `feat(skills): add <name>` for a new skill, `fix(skills): ...` for a correction.
+6. Open a pull request; CI validates the manifests, the skill frontmatter, and every commit message.
