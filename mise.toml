@@ -5,9 +5,16 @@ lockfile = true
 claude = "2.1"
 committed = "1.1"
 jq = "1.8"
+lefthook = "2.1"
 markdownlint-cli2 = "0.23"
 "npm:skills-ref" = "0.1.5"
 svu = "3.4"
+
+# A fresh clone gets working git hooks from `mise install` alone. Note this
+# requires `mise trust` first, since mise refuses to run hooks from an
+# untrusted config.
+[hooks]
+postinstall = "lefthook install"
 
 [tasks.lint]
 description = "Run linters"

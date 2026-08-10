@@ -1,0 +1,9 @@
+# Git hooks run in a non-interactive shell that has no mise activation, so
+# tools are invoked through `mise exec` rather than assumed to be on PATH.
+#
+# {1} is the path to the pending commit message file that git passes to the
+# commit-msg hook.
+commit-msg:
+  jobs:
+    - name: committed
+      run: mise exec -- committed --commit-file {1}
