@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -71,3 +72,75 @@ jobs:
             mise exec -- committed "$sha" || status=1
           done
           exit "$status"
+
+  release:
+    needs: [validate, commits]
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install mise and tools
+        uses: jdx/mise-action@v4
+
+      - name: Resolve version
+        id: version
+        run: |
+          # svu prints the version with the tag prefix attached, and
+          # --tag.output '' does not strip it. Rebuilding from the JSON
+          # components is what yields a bare version for the manifests.
+          bare() {
+            mise exec -- svu "$1" --tag.prefix muto--v --json \
+              | jq -r '"\(.major).\(.minor).\(.patch)"'
+          }
+          current="$(bare current)"
+          next="$(bare next)"
+          printf 'current=%s next=%s\n' "$current" "$next"
+          if [ "$next" = "$current" ]; then
+            printf 'no releasable commits, skipping\n'
+            printf 'release=false\n' >> "$GITHUB_OUTPUT"
+          else
+            printf 'release=true\n' >> "$GITHUB_OUTPUT"
+            printf 'version=%s\n' "$next" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Bump manifests
+        if: steps.version.outputs.release == 'true'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          tmp="$(mktemp)"
+          jq --arg v "$VERSION" '.version = $v' \
+            .claude-plugin/plugin.json > "$tmp"
+          mv "$tmp" .claude-plugin/plugin.json
+          jq --arg v "$VERSION" '.plugins[0].version = $v' \
+            .claude-plugin/marketplace.json > "$tmp"
+          mv "$tmp" .claude-plugin/marketplace.json
+          git diff --stat
+
+      - name: Validate the bumped manifests
+        if: steps.version.outputs.release == 'true'
+        run: mise run validate
+
+      - name: Publish
+        if: steps.version.outputs.release == 'true'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email \
+            '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .claude-plugin/plugin.json .claude-plugin/marketplace.json
+          git commit -m "chore(release): publish v$VERSION"
+          # Push the branch before tagging. Marketplace caches are clones
+          # tracking origin/main and they fetch no tags, so a tag on a commit
+          # the remote does not have publishes nothing.
+          git push origin main
+          mise exec -- claude plugin tag --push -m "Release %s"

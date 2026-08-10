@@ -30,7 +30,3 @@ run = ["markdownlint-cli2 '**/*.md' --config markdownlint.yaml --fix"]
 [tasks.validate]
 description = "Validate plugin manifests and skill frontmatter"
 run = ["claude plugin validate --strict .", "./scripts/check-skills.sh"]
-
-[tasks.release]
-description = "Bump both manifests, validate, commit, push main, and tag. Usage: mise run release minor"
-run = "./scripts/release.sh {{arg(name='bump')}}"
