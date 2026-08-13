@@ -1,6 +1,16 @@
 # agentmuto
 
-Agent Muto. Personal coding agent skills, deep cover in your terminal.
+My Claude Code skills, packaged so I can install them on any machine. Public because that is the easiest way to
+distribute them, not because they are advice.
+
+## Skills
+
+| Skill                   | Use it when                                                    |
+| ----------------------- | -------------------------------------------------------------- |
+| `muto:authoring-skills` | Adding, editing, validating, or releasing a skill in this repo |
+
+One so far. `agents/`, `commands/`, and `hooks/` are empty placeholders for whenever there is something to put in
+them.
 
 ## Install
 
@@ -9,15 +19,7 @@ Agent Muto. Personal coding agent skills, deep cover in your terminal.
 /plugin install muto@agentmuto
 ```
 
-## Update
-
-```text
-/plugin update muto@agentmuto
-```
-
-There is no auto-update. Updating is always an explicit command.
-
-To get it on every machine automatically, add it to your dotfiles-managed `~/.claude/settings.json`:
+To get it on every machine instead of one, declare it in dotfiles-managed `~/.claude/settings.json`:
 
 ```json
 {
@@ -28,11 +30,17 @@ To get it on every machine automatically, add it to your dotfiles-managed `~/.cl
 }
 ```
 
-## Skills
+## Update
 
-| Skill                   | Purpose                                         |
-| ----------------------- | ----------------------------------------------- |
-| `muto:authoring-skills` | Conventions and release mechanics for this repo |
+```text
+/plugin update muto@agentmuto
+```
+
+Claude Code has no auto-update for plugins, so pulling a new version is always this explicit command.
+
+Publishing a new version is the opposite, entirely automatic. Every push to `main` whose commits imply a version bump
+rewrites the manifests, commits, and tags. Marketplace caches are clones tracking `origin/main` and fetch no tags, so
+the branch is what consumers actually resolve against and the tag is only a record.
 
 ## Development
 
@@ -50,12 +58,13 @@ mise run lint         # markdownlint + manifests + skill spec conformance
 mise run format       # fix what markdownlint can fix on its own
 ```
 
-Two hooks come from `mise install`. A `commit-msg` hook rejects anything that is not
-[Conventional Commits](https://www.conventionalcommits.org), and a `pre-push` hook runs `mise run lint`, the same gate
-CI runs. The pre-push hook skips itself when `CI` is set, so it never fires on the release job's own push.
+Commits follow [Conventional Commits](https://www.conventionalcommits.org), because the commit type is what decides
+the next version. Two hooks come from `mise install`: `commit-msg` rejects anything that does not parse, and
+`pre-push` runs `mise run lint`, the same gate CI runs. The pre-push hook skips itself when `CI` is set so it never
+fires on the release job's own push.
 
-Both are worth having rather than leaving to CI, because releases are cut automatically from the commit log and the
-release job waits on validation. A stray over-long line in a markdown file is enough to hold up a release.
+Both are worth having rather than leaving to CI, because the release job waits on validation. A stray over-long line
+in a markdown file is enough to hold up a release.
 
 Note: `mise.toml` pins the `claude` CLI, so inside this repository mise's copy shadows the one on your PATH. That is
 deliberate, it makes local runs identical to CI.
