@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "muto",
-      "description": "Agent Muto. Personal coding agent skills, deep cover in your terminal.",
+      "description": "Personal Claude Code skills for pseudomuto.",
       "version": "0.0.0",
       "source": "./",
       "author": {
