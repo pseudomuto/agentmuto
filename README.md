@@ -46,11 +46,16 @@ so `mise install` exits with `Config files ... are not trusted` and installs not
 
 ```bash
 mise install          # install pinned tools, and wire up git hooks
-mise run validate     # manifests + skill spec conformance (offline)
+mise run lint         # markdownlint + manifests + skill spec conformance
+mise run format       # fix what markdownlint can fix on its own
 ```
 
-Commits follow [Conventional Commits](https://www.conventionalcommits.org). A `commit-msg` hook rejects anything else,
-and releases are cut automatically from the log, so the commit message decides the version.
+Two hooks come from `mise install`. A `commit-msg` hook rejects anything that is not
+[Conventional Commits](https://www.conventionalcommits.org), and a `pre-push` hook runs `mise run lint`, the same gate
+CI runs. The pre-push hook skips itself when `CI` is set, so it never fires on the release job's own push.
+
+Both are worth having rather than leaving to CI, because releases are cut automatically from the commit log and the
+release job waits on validation. A stray over-long line in a markdown file is enough to hold up a release.
 
 Note: `mise.toml` pins the `claude` CLI, so inside this repository mise's copy shadows the one on your PATH. That is
 deliberate, it makes local runs identical to CI.

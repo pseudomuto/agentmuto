@@ -7,3 +7,22 @@ commit-msg:
   jobs:
     - name: committed
       run: mise exec -- committed --commit-file {1}
+
+# Fast feedback for the same gate CI runs. `mise run lint` is markdownlint plus
+# manifest and skill-frontmatter validation, about a second in total.
+#
+# The CI skip is not optional. `mise install` fires mise's postinstall hook,
+# which runs `lefthook install`, and jdx/mise-action runs `mise install`, so CI
+# checkouts have these hooks too. Without the skip this would fire on the
+# release job's own `git push origin main`, re-running a check the validate job
+# already did and adding a failure point immediately after the release commit
+# exists.
+#
+# `mise run` is invoked directly rather than through `mise exec`, because the
+# mise binary itself is on PATH; it is the mise-managed tools that are not.
+pre-push:
+  skip:
+    - run: test -n "$CI"
+  jobs:
+    - name: lint
+      run: mise run lint
