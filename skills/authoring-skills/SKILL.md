@@ -1,8 +1,8 @@
 ---
 name: authoring-skills
-description: |
-  Conventions and validation rules for authoring Agent Skills in the agentmuto repo. Use when adding, editing,
-  validating, or releasing a skill, or when writing SKILL.md frontmatter.
+description: >-
+  Use when adding, editing, validating, or releasing a skill in the agentmuto repo, or when writing SKILL.md
+  frontmatter.
 ---
 
 # Authoring agentmuto Skills
@@ -33,7 +33,7 @@ Everything except `SKILL.md` is optional, and most skills need none of it.
 | Field           | Required | Constraints                                                                                                                    |
 | --------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | `name`          | Yes      | 1-64 chars. Lowercase `a-z`, `0-9`, and `-` only. No leading, trailing, or consecutive hyphens. Must match the directory name. |
-| `description`   | Yes      | 1-1024 chars. What the skill does and when to use it.                                                                          |
+| `description`   | Yes      | 1-1024 chars. When to use the skill.                                                                                           |
 | `license`       | No       | License name, or a reference to a bundled license file.                                                                        |
 | `compatibility` | No       | Max 500 chars. Environment requirements. Most skills do not need it.                                                           |
 | `metadata`      | No       | Map of string keys to string values.                                                                                           |
@@ -44,7 +44,7 @@ Minimal:
 ```markdown
 ---
 name: skill-name
-description: What it does. Use when <triggers>.
+description: Use when <triggers>.
 ---
 ```
 
@@ -53,8 +53,8 @@ description: What it does. Use when <triggers>.
 The spec requires `name` to match the parent directory. Get it wrong and the skill does not load, so this is the single
 easiest thing to break.
 
-Claude Code namespaces plugin skills as `plugin:skill`, so a skill here is invoked as `muto:<directory>`. Do not
-prefix directory names with `muto`, that produces `muto:muto-thing`.
+Claude Code namespaces plugin skills as `plugin:skill`, so a skill here is invoked as `muto:<directory>`. Do not prefix
+directory names with `muto`, that produces `muto:muto-thing`.
 
 Use a verb phrase describing the activity: `authoring-skills`, not `skill-authoring-helper`.
 
@@ -63,10 +63,9 @@ Use a verb phrase describing the activity: `authoring-skills`, not `skill-author
 The description is the entire basis on which the skill gets selected, and it is loaded at startup for every installed
 skill. It is both the trigger and a standing token cost, which pushes the same direction: specific and brief.
 
-Say what the skill does and when to use it, and include the words someone would actually type.
+Say when to use it, and include the words someone would actually type.
 
-- Good:
-  `Extracts text and tables from PDFs, fills forms. Use when working with PDF documents or when the user mentions PDFs.`
+- Good: `Use when working with PDF documents or when the user mentions PDFs.`
 - Bad: `Helps with PDFs.`
 
 A skill that never triggers is indistinguishable from one that does not exist, and no validator catches that. Validation
