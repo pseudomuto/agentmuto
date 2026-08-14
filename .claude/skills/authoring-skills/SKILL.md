@@ -14,10 +14,10 @@ For general skill-writing craft, use `superpowers:writing-skills`.
 
 ## Layout
 
-A skill is a directory under `skills/` containing at minimum a `SKILL.md`:
+A skill is a directory containing at minimum a `SKILL.md`:
 
 ```text
-skills/<name>/
+<name>/
 ├── SKILL.md      # required: frontmatter plus instructions
 ├── scripts/      # optional: executable code the agent can run
 ├── references/   # optional: documentation loaded on demand
@@ -25,6 +25,19 @@ skills/<name>/
 ```
 
 Everything except `SKILL.md` is optional, and most skills need none of it.
+
+### Which directory
+
+| Location          | Loads when                         | Use for                                        |
+| ----------------- | ---------------------------------- | ---------------------------------------------- |
+| `skills/`         | the plugin is installed, anywhere  | anything consumers should get                  |
+| `.claude/skills/` | the working directory is this repo | tooling only useful while working on this repo |
+
+A skill that talks about `mise run validate`, this repo's layout, or its release process cannot do anything useful on
+a consumer's machine, so it belongs in `.claude/skills/` and costs them nothing. This skill lives there for exactly
+that reason. Everything else goes in `skills/`.
+
+Both trees are validated, and project skills are invoked by bare name with no plugin prefix.
 
 ## Frontmatter
 
@@ -37,7 +50,7 @@ Everything except `SKILL.md` is optional, and most skills need none of it.
 | `license`       | No       | License name, or a reference to a bundled license file.                                                                        |
 | `compatibility` | No       | Max 500 chars. Environment requirements. Most skills do not need it.                                                           |
 | `metadata`      | No       | Map of string keys to string values.                                                                                           |
-| `allowed-tools` | No       | Space-separated pre-approved tools. Experimental; support varies.                                                              |
+| `allowed-tools` | No       | Space-separated tools the skill needs. See below.                                                                              |
 
 Minimal:
 
@@ -53,8 +66,9 @@ description: Use when <triggers>.
 The spec requires `name` to match the parent directory. Get it wrong and the skill does not load, so this is the single
 easiest thing to break.
 
-Claude Code namespaces plugin skills as `plugin:skill`, so a skill here is invoked as `muto:<directory>`. Do not prefix
-directory names with `muto`, that produces `muto:muto-thing`.
+Claude Code namespaces plugin skills as `plugin:skill`, so a skill under `skills/` is invoked as `muto:<directory>`. Do
+not prefix directory names with `muto`, that produces `muto:muto-thing`. Skills under `.claude/skills/` get no prefix
+and are invoked by directory name alone.
 
 Use a verb phrase describing the activity: `authoring-skills`, not `skill-authoring-helper`.
 
@@ -70,6 +84,25 @@ Say when to use it, and include the words someone would actually type.
 
 A skill that never triggers is indistinguishable from one that does not exist, and no validator catches that. Validation
 proves a skill is well formed, never that it fires.
+
+### `allowed-tools`
+
+Declare the tools the skill needs. Bash entries take permission-rule syntax with a trailing wildcard, and the
+space-separated form is the one Claude Code's own permission dialog writes:
+
+```text
+allowed-tools: AskUserQuestion Bash(git add *) Bash(git commit *)
+```
+
+Declaring anything here makes invoking the skill permission-gated. The agent prompts once with `Execute skill: <name>`
+before the body loads, which is the trade: an explicit tool contract costs one prompt per invocation.
+
+Plan for the consequence. A non-interactive run has nobody to answer that prompt, so the invocation is denied and the
+skill never loads at all. A skill that has to work headless, in CI or inside a subagent, must leave this field out.
+
+Two things temper what the grants buy. Read-only commands never prompt anyway, including the read-only forms of `git`,
+so listing them only documents intent. And a rule matches the command as written, so `git -C <path> status`, or two
+commands joined with `&&`, still prompts despite `Bash(git status *)`.
 
 ## Progressive disclosure
 
@@ -95,9 +128,10 @@ Avoid deeply nested reference chains.
 mise run validate
 ```
 
-That runs three things: `claude plugin validate --strict .` for the plugin and marketplace manifests, then
-`scripts/check-skills.sh`, which walks every skill and calls `skills-ref validate` and `skills-ref read-properties` on
-each.
+That runs `claude plugin validate --strict .` for the plugin and marketplace manifests, then `scripts/check-skills.sh`
+once per skill tree, `skills/` and `.claude/skills/`. The script walks every skill in the directory it is given and
+calls `skills-ref validate` and `skills-ref read-properties` on each. It takes the directory as its first argument and
+defaults to `skills/`, so a new tree needs its own line in the `validate` task or it goes unchecked.
 
 `skills-ref` is the spec's reference implementation, so conformance is checked against the spec rather than against
 hand-rolled parsing. Both subcommands are required, because they miss different things:
@@ -140,9 +174,12 @@ consumers still update with an explicit `/plugin update muto@agentmuto`.
 
 ## Adding a skill, end to end
 
-1. `mkdir -p skills/<name>`
-2. Write `skills/<name>/SKILL.md` with `name: <name>` matching the directory.
-3. `mise run validate`
-4. Add a row to the skills table in `README.md`.
-5. Commit with a conventional message: `feat(skills): add <name>` for a new skill, `fix(skills): ...` for a correction.
-6. Open a pull request; CI validates the manifests, the skill frontmatter, and every commit message.
+1. Decide where it goes. `skills/` if consumers should get it, `.claude/skills/` if it only makes sense in this repo.
+2. `mkdir -p <dir>/<name>`
+3. Write `<dir>/<name>/SKILL.md` with `name: <name>` matching the directory.
+4. `mise run validate`
+5. For a shipped skill, add a row to the skills table in `README.md`. Project skills are not installable, so they do
+   not belong in that table.
+6. Commit with a conventional message. A shipped skill is `feat(skills): add <name>` or `fix(skills): ...` because it
+   is the product. A project skill ships to nobody, so it takes a type that cuts no release, usually `chore(skills)`.
+7. Open a pull request; CI validates the manifests, the skill frontmatter, and every commit message.

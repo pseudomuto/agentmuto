@@ -5,9 +5,9 @@ distribute them, not because they are advice.
 
 ## Skills
 
-| Skill                   | Use it when                                                    |
-| ----------------------- | -------------------------------------------------------------- |
-| `muto:authoring-skills` | Adding, editing, validating, or releasing a skill in this repo |
+| Skill              | Use it when                       |
+| ------------------ | --------------------------------- |
+| `muto:git-commit`  | Creating or amending a git commit |
 
 One so far. `agents/`, `commands/`, and `hooks/` are empty placeholders for whenever there is something to put in
 them.
@@ -44,8 +44,9 @@ the branch is what consumers actually resolve against and the tag is only a reco
 
 ## Development
 
-See [`skills/authoring-skills/SKILL.md`](skills/authoring-skills/SKILL.md) for this repo's conventions and the process
-for adding or releasing a skill.
+See [`.claude/skills/authoring-skills/SKILL.md`](.claude/skills/authoring-skills/SKILL.md) for this repo's conventions
+and the process for adding or releasing a skill. It is a project skill rather than a shipped one, so it loads
+automatically when you work in this repo and is not part of the plugin.
 
 Requires [mise](https://mise.jdx.dev). All tools are pinned in `mise.toml`.
 

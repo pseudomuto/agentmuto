@@ -29,4 +29,11 @@ run = ["markdownlint-cli2 '**/*.md' --config markdownlint.yaml --fix"]
 
 [tasks.validate]
 description = "Validate plugin manifests and skill frontmatter"
-run = ["claude plugin validate --strict .", "./scripts/check-skills.sh"]
+# Two skill trees to walk: `skills/` ships in the plugin, `.claude/skills/`
+# is this repo's own tooling. The script takes the directory as its first
+# argument and defaults to the shipped one.
+run = [
+  "claude plugin validate --strict .",
+  "./scripts/check-skills.sh",
+  "./scripts/check-skills.sh .claude/skills",
+]
