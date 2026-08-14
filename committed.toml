@@ -37,7 +37,7 @@ allowed_scopes = [
 # default of true is wrong here.
 subject_capitalized = false
 
-# The default of 50 is shorter than this repo's subjects run in practice.
+# GitHub truncates anything longer than this.
 subject_length = 72
 
 imperative_subject = true

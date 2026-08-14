@@ -2,11 +2,10 @@
 
 ## Commits
 
-Conventional Commits, enforced by a `commit-msg` hook and re-checked in CI. This **overrides** the global `[pkg]: Title`
-preference, which applies to Go projects rather than here.
+Conventional Commits, enforced by a `commit-msg` hook and re-checked in CI.
 
-Types: `feat`, `fix`, `chore`, `docs`, `style`, `refactor`, `perf`, `test`, `ci`.
-Scopes (optional): `skills`, `plugin`, `scripts`, `ci`, `mise`, `readme`, `release`.
+Types: `feat`, `fix`, `chore`, `docs`, `style`, `refactor`, `perf`, `test`, `ci`. Scopes (optional): `skills`, `plugin`,
+`scripts`, `ci`, `mise`, `readme`, `release`.
 
 Releases are automatic on every push to `main`, with the version inferred from the log, so the type is a release
 decision rather than a label:
@@ -18,10 +17,12 @@ decision rather than a label:
 
 `release` is a scope reserved for the CI release commit. Do not use it by hand.
 
+See [committed.toml](committed.toml) for full details.
+
 ## Conventions
 
-YAML files use `.yaml`, not `.yml`. The sole exception is `.github/dependabot.yml`, because GitHub reads only that
-exact filename.
+YAML files use `.yaml`, not `.yml`. The sole exception is `.github/dependabot.yml`, because GitHub reads only that exact
+filename.
 
 GitHub Actions are pinned by commit SHA with the version in a trailing comment, never by a mutable tag like `@v7`.
 Dependabot updates both parts together.
