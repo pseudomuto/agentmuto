@@ -21,8 +21,7 @@ See [committed.toml](committed.toml) for full details.
 
 ## Conventions
 
-YAML files use `.yaml`, not `.yml`. The sole exception is `.github/dependabot.yml`, because GitHub reads only that exact
-filename.
+YAML files use `.yaml`, not `.yml`.
 
 GitHub Actions are pinned by commit SHA with the version in a trailing comment, never by a mutable tag like `@v7`.
 Dependabot updates both parts together.

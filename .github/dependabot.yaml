@@ -2,9 +2,6 @@
 # update on their own and go quiet when a security patch ships. Dependabot is
 # what turns that silence back into a signal: it rewrites both the SHA and the
 # trailing version comment, so the pins stay honest.
-#
-# This file is `.yml`, the one exception to the repo's `.yaml` rule, because
-# GitHub only reads `.github/dependabot.yml`.
 version: 2
 
 updates:
