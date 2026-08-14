@@ -151,6 +151,8 @@ As mentioned above, always include at least a subject and body.
 - Imperative mood: "fix bug" not "fixes bug"
 - Reference issues: `Fixes #123`, `Refs #456`
 - Keep the subject to at most 72 characters so GitHub won't truncate it.
+- Wrap body lines at 72 characters too. Commit linters check body width, not just the subject, so an unwrapped
+  paragraph fails the `commit-msg` hook even when the subject is fine.
 - Always omit co-author or mentioning Claude. This doesn't provide any meaningful info.
 - Provide a clear and concise description in the commit body outlining the problem and the proposed solution.
 - Assume reviewer is intelligent, well intentioned, and knows the codebase, but potentially lacks context.
