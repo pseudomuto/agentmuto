@@ -29,11 +29,16 @@ run = ["markdownlint-cli2 '**/*.md' --config markdownlint.yaml --fix"]
 
 [tasks.validate]
 description = "Validate plugin manifests and skill frontmatter"
-# Two skill trees to walk: `skills/` ships in the plugin, `.claude/skills/`
-# is this repo's own tooling. The script takes the directory as its first
-# argument and defaults to the shipped one.
+# Three skill trees to walk: `skills/` ships in the plugin, `.claude/skills/`
+# is this repo's own tooling, and `.codex/skills` is a symlink to that tree so
+# Codex finds the same project skills. The script takes the directory as its
+# first argument and defaults to the shipped one.
+#
+# The `.codex/skills` line revalidates skills the previous line already
+# covered, which is the point: it is what fails when that symlink dangles.
 run = [
   "claude plugin validate --strict .",
   "./scripts/check-skills.sh",
   "./scripts/check-skills.sh .claude/skills",
+  "./scripts/check-skills.sh .codex/skills",
 ]

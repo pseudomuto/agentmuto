@@ -29,12 +29,31 @@ if ! command -v skills-ref >/dev/null 2>&1; then
   exit 1
 fi
 
+# A skill tree can be a symlink, which is how `.codex/skills` points Codex at
+# `.claude/skills`. A broken link there passes both checks below without ever
+# being reported: `-d` is false for a dangling symlink, so the tree takes the
+# "no skills directory" exit, and the `*/` glob matches directories only, so a
+# dangling entry inside a tree matches nothing and leaves `status` at 0. Either
+# way validation claims success having validated nothing. Reject broken links
+# explicitly instead.
+if [ -L "$SKILLS_DIR" ] && [ ! -e "$SKILLS_DIR" ]; then
+  printf 'error: dangling symlink: %s\n' "$SKILLS_DIR" >&2
+  exit 1
+fi
+
 if [ ! -d "$SKILLS_DIR" ]; then
   printf 'ok: no skills directory at %s\n' "$SKILLS_DIR"
   exit 0
 fi
 
 shopt -s nullglob
+for entry in "$SKILLS_DIR"/*; do
+  if [ -L "$entry" ] && [ ! -e "$entry" ]; then
+    printf 'error: dangling symlink: %s\n' "$entry" >&2
+    status=1
+  fi
+done
+
 for dir in "$SKILLS_DIR"/*/; do
   skills-ref validate "$dir" || status=1
   skills-ref read-properties "$dir" >/dev/null || status=1
