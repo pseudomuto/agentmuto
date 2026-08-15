@@ -1,7 +1,7 @@
 # agentmuto
 
-My Claude Code skills, packaged so I can install them on any machine. Public because that is the easiest way to
-distribute them, not because they are advice.
+My coding agent skills, packaged so I can install them on any machine. They install in both Claude Code and Codex from
+the same manifests. Public because that is the easiest way to distribute them, not because they are advice.
 
 ## Skills
 
@@ -13,6 +13,8 @@ One so far. `agents/`, `commands/`, and `hooks/` are empty placeholders for when
 them.
 
 ## Install
+
+Claude Code:
 
 ```text
 /plugin marketplace add pseudomuto/agentmuto
@@ -30,13 +32,29 @@ To get it on every machine instead of one, declare it in dotfiles-managed `~/.cl
 }
 ```
 
+Codex:
+
+```bash
+codex plugin marketplace add pseudomuto/agentmuto
+codex plugin add muto@agentmuto
+```
+
+Codex needs nothing else from this repo. It looks for its own `.agents/plugins/marketplace.json` and
+`.codex-plugin/plugin.json` first, then falls back to the `.claude-plugin/` manifests that are already here, so both
+installers read one set of files. Skills keep the same `muto:` prefix on either side.
+
 ## Update
 
 ```text
 /plugin update muto@agentmuto
 ```
 
-Claude Code has no auto-update for plugins, so pulling a new version is always this explicit command.
+```bash
+codex plugin marketplace upgrade agentmuto
+```
+
+Claude Code has no auto-update for plugins, so pulling a new version is always this explicit command. The Codex
+equivalent refreshes the marketplace snapshot it cloned.
 
 Publishing a new version is the opposite, entirely automatic. Every push to `main` whose commits imply a version bump
 rewrites the manifests, commits, and tags. Marketplace caches are clones tracking `origin/main` and fetch no tags, so
@@ -55,7 +73,7 @@ so `mise install` exits with `Config files ... are not trusted` and installs not
 
 ```bash
 mise install          # install pinned tools, and wire up git hooks
-mise run lint         # markdownlint + manifests + skill spec conformance
+mise run lint         # markdownlint + manifests + skill spec + Codex ingestion
 mise run format       # fix what markdownlint can fix on its own
 ```
 
@@ -67,5 +85,7 @@ fires on the release job's own push.
 Both are worth having rather than leaving to CI, because the release job waits on validation. A stray over-long line
 in a markdown file is enough to hold up a release.
 
-Note: `mise.toml` pins the `claude` CLI, so inside this repository mise's copy shadows the one on your PATH. That is
-deliberate, it makes local runs identical to CI.
+Note: `mise.toml` pins the `claude` and `codex` CLIs, so inside this repository mise's copies shadow the ones on your
+PATH. That is deliberate, it makes local runs identical to CI. Both are load-bearing rather than conveniences: `claude`
+validates the manifests and tags releases, and `codex` is what proves the manifests still install in the other harness.
+`codex` is a 262M install, which is the price of that last check.
