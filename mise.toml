@@ -3,6 +3,7 @@ lockfile = true
 
 [tools]
 claude = "2.1"
+codex = "0.147"
 committed = "1.1"
 jq = "1.8"
 lefthook = "2.1"
@@ -41,4 +42,5 @@ run = [
   "./scripts/check-skills.sh",
   "./scripts/check-skills.sh .claude/skills",
   "./scripts/check-skills.sh .codex/skills",
+  "./scripts/check-codex.sh",
 ]

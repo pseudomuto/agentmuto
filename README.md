@@ -73,7 +73,7 @@ so `mise install` exits with `Config files ... are not trusted` and installs not
 
 ```bash
 mise install          # install pinned tools, and wire up git hooks
-mise run lint         # markdownlint + manifests + skill spec conformance
+mise run lint         # markdownlint + manifests + skill spec + Codex ingestion
 mise run format       # fix what markdownlint can fix on its own
 ```
 
@@ -85,5 +85,7 @@ fires on the release job's own push.
 Both are worth having rather than leaving to CI, because the release job waits on validation. A stray over-long line
 in a markdown file is enough to hold up a release.
 
-Note: `mise.toml` pins the `claude` CLI, so inside this repository mise's copy shadows the one on your PATH. That is
-deliberate, it makes local runs identical to CI.
+Note: `mise.toml` pins the `claude` and `codex` CLIs, so inside this repository mise's copies shadow the ones on your
+PATH. That is deliberate, it makes local runs identical to CI. Both are load-bearing rather than conveniences: `claude`
+validates the manifests and tags releases, and `codex` is what proves the manifests still install in the other harness.
+`codex` is a 262M install, which is the price of that last check.

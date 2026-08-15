@@ -137,6 +137,12 @@ once per skill tree: `skills/`, `.claude/skills/`, and `.codex/skills`. The scri
 is given and calls `skills-ref validate` and `skills-ref read-properties` on each. It takes the directory as its first
 argument and defaults to `skills/`, so a new tree needs its own line in the `validate` task or it goes unchecked.
 
+`scripts/check-codex.sh` is the last line, and it is the only check that exercises the other harness. It installs this
+repo into a throwaway `CODEX_HOME`, then asserts Codex reports the version from `plugin.json` and surfaces every skill
+under `skills/` in the prompt the model receives. No auth, no network, no effect on your real Codex config. It exists
+because `claude plugin validate` proves only that Claude Code is happy, while the release job rewrites both manifests
+before publishing, and Codex accepting `.claude-plugin/` manifests at all is a fallback rather than its own format.
+
 The `.codex/skills` line looks redundant, since the symlink means it revalidates the same skills as the line above it.
 It is there to catch a broken symlink, which is otherwise invisible: a dangling link is not a directory, so the tree
 would take the script's "no skills directory" exit and a dangling skill inside one would not match its

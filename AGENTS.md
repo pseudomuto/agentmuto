@@ -37,7 +37,8 @@ everything around it. Three places encode that:
   skills to `.claude/skills/` and they appear in both.
 - Shipped skills need nothing. Codex reads `.claude-plugin/marketplace.json` and `.claude-plugin/plugin.json` as
   fallbacks when its own `.agents/plugins/` and `.codex-plugin/` manifests are absent, so a single set of manifests
-  serves both installers.
+  serves both installers. `scripts/check-codex.sh` is what keeps that true, by installing the repo into a throwaway
+  `CODEX_HOME` during `mise run validate`.
 
 Write skill bodies so they degrade rather than break. `git-commit` names `AskUserQuestion` but tells the agent to skip
 confirmation when that tool is absent, which is what makes it correct on a harness that has no such tool.
