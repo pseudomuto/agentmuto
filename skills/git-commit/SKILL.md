@@ -110,6 +110,9 @@ Analyze the diff to determine the subject:
 When a patch/diff contains multiple things, ask before breaking up into multiple commits. The type/scope should focus on
 the main purpose of the change.
 
+Also, remember that the intended reader of the commit message is a human engineer, not a machine. Overly detailed,
+long-winded paragraphs when not worded well, will likely go unread which defeats the purpose.
+
 ### 4. Confirm Before Committing (only when it changes the outcome)
 
 Do not confirm routinely, and do not confirm because you feel unsure. Confirm only when one of these observable
@@ -151,8 +154,8 @@ As mentioned above, always include at least a subject and body.
 - Imperative mood: "fix bug" not "fixes bug"
 - Reference issues: `Fixes #123`, `Refs #456`
 - Keep the subject to at most 72 characters so GitHub won't truncate it.
-- Wrap body lines at 72 characters too. Commit linters check body width, not just the subject, so an unwrapped
-  paragraph fails the `commit-msg` hook even when the subject is fine.
+- Wrap body lines at 72 characters too. Commit linters check body width, not just the subject, so an unwrapped paragraph
+  fails the `commit-msg` hook even when the subject is fine.
 - Always omit co-author or mentioning Claude. This doesn't provide any meaningful info.
 - Provide a clear and concise description in the commit body outlining the problem and the proposed solution.
 - Assume reviewer is intelligent, well intentioned, and knows the codebase, but potentially lacks context.
@@ -161,6 +164,8 @@ As mentioned above, always include at least a subject and body.
 - Avoid describing the actual lines of code (e.g. pkg/internal gains a 'Name' method on line 45).
 - Never include details that were fixed in revisions in the same branch, since the reviewer wouldn't have seen the
   original issues.
+- When referencing code, variables, consts, etc. backtick the reference
+- Keep in mind the lines starting with `#` in git commits are removed
 
 ## Git Safety Protocol
 
