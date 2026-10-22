@@ -9,7 +9,7 @@
     {
       "name": "muto",
       "description": "Personal Claude Code skills for pseudomuto.",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "source": "./",
       "author": {
         "name": "David Muto",
